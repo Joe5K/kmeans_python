@@ -1,9 +1,11 @@
 from contextlib import suppress
 from copy import deepcopy
 from math import sqrt, inf
+from threading import Thread
 
 from numpy.random import choice
 from numpy import array_split
+
 
 class Point:
     def __init__(self, coordinates: list):
@@ -17,6 +19,9 @@ class Point:
 
     def __hash__(self):
         return hash(repr(self))
+
+    def __getitem__(self, item):
+        return self.coordinates[item]
 
     def __eq__(self, other):
         for i, j in zip(self.coordinates, other.coordinates):
@@ -49,9 +54,10 @@ class Centroid:
 
 
 class KMeans:
-    def __init__(self, data_filename: str, k: int = 10):
+    def __init__(self, data_filename: str, k: int, threads_count: int):
         self._load_data(data_filename)
         self._generate_initial_centroids(k)
+        self.threads_count = threads_count
 
     def _load_data(self, filename):
         self.points = []
@@ -76,6 +82,17 @@ class KMeans:
     def _generate_initial_centroids(self, k):
         self.centroids = [Centroid(i) for i in choice(self.points, k, replace=False)]
 
+    def _thread_function(self, points):
+        for i in points:
+            new_centroid = None
+            distance_to_new_centroid = inf
+            for j in self.centroids:
+                current_distance = i.distance(j.centroid_coordinate)
+                if current_distance < distance_to_new_centroid:
+                    new_centroid = j
+                    distance_to_new_centroid = current_distance
+            new_centroid.points.append(i)
+
     def work(self):
         counter = 0
         successful = False
@@ -86,15 +103,12 @@ class KMeans:
             for i in self.centroids:
                 i.points = []
 
-            for i in self.points:
-                new_centroid = None
-                distance_to_new_centroid = inf
-                for j in self.centroids:
-                    current_distance = i.distance(j.centroid_coordinate)
-                    if current_distance < distance_to_new_centroid:
-                        new_centroid = j
-                        distance_to_new_centroid = current_distance
-                new_centroid.points.append(i)
+            threads = [Thread(target=self._thread_function(i)) for i in array_split(self.points, self.threads_count)]
+            for i in threads:
+                i.start()
+
+            for i in threads:
+                i.join()
 
             for i in self.centroids:
                 i.count_new_coordinates()
@@ -106,9 +120,19 @@ class KMeans:
                     counter += 1
                     break
 
-        print(counter)
+        print(f"KMeans ukoncene po {counter} iteraciach")
+
+    def plot(self):
+        import matplotlib.pyplot as plt
+
+        fig = plt.figure(figsize=(12, 12))
+        ax = fig.add_subplot(projection='3d')
+
+        for i in self.centroids:
+            ax.scatter([j[0] for j in i.points], [j[1] for j in i.points], [j[2] for j in i.points])
+        plt.show()
 
 
-k_means = KMeans("iris.csv", 3)
+k_means = KMeans(data_filename="iris.csv", k=3, threads_count=150)
 k_means.work()
-pass
+k_means.plot()
