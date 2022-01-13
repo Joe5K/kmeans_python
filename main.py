@@ -41,14 +41,6 @@ class Centroid:
     def __repr__(self):
         return str(self.centroid_coordinate)
 
-    def copy_centroid_and_points(self):
-        copy = Centroid(self.centroid_coordinate)
-        copy.points = self.points
-        return copy
-
-    def __eq__(self, other):
-        return self.centroid_coordinate == other.centroid_coordinate
-
     def count_new_coordinates(self):
         if self.points:
             sum_vector = [0 for _ in self.points[0]]
@@ -104,12 +96,12 @@ class KMeans:
     def work(self):
         split_data_for_threads = array_split(self.points, self.threads_count)
 
-        counter = 1
+        counter = 0
         successful = False
 
         start = datetime.now()
         while not successful:
-            _previous_state = [i.copy_centroid_and_points() for i in self.centroids]
+            _previous_centroids = [Centroid(i.centroid_coordinate) for i in self.centroids]
 
             for i in self.centroids:
                 i.points.clear()
@@ -125,11 +117,11 @@ class KMeans:
                 i.count_new_coordinates()
 
             successful = True
-            for i, j in zip(self.centroids, _previous_state):
-                if i != j:
+            for i, j in zip(self.centroids, _previous_centroids):
+                if i.centroid_coordinate != j.centroid_coordinate:
                     successful = False
-                    counter += 1
                     break
+            counter += 1
         time = round((datetime.now()-start).total_seconds(), 3)
         print(f"""KMeans ukoncene po {counter} iteraciach, trvalo to {time} sekund, pri {self.threads_count} threadoch \
 trvala jedna iteracia priemerne {round(time/counter, 3)} sekund.""")
