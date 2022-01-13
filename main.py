@@ -1,5 +1,5 @@
 from contextlib import suppress
-from copy import deepcopy
+from datetime import datetime
 from math import sqrt, inf
 from threading import Thread
 
@@ -41,6 +41,11 @@ class Centroid:
     def __repr__(self):
         return str(self.centroid_coordinate)
 
+    def copy_centroid_and_points(self):
+        copy = Centroid(self.centroid_coordinate)
+        copy.points = self.points
+        return copy
+
     def __eq__(self, other):
         return self.centroid_coordinate == other.centroid_coordinate and set(self.points) == set(other.points)
 
@@ -64,7 +69,10 @@ class KMeans:
         with open(filename) as file:
             dimension = None
             for line in file:
-                data = line.replace(",", ".").replace("\n", "").split(";")
+                if filename == "iris.csv":
+                    data = line.replace(",", ".").replace("\n", "").split(";")
+                else:
+                    data = line.replace("\n", "").split(",")
 
                 floats = []
                 for i in data:
@@ -95,11 +103,13 @@ class KMeans:
 
     def work(self):
         split_data_for_threads = array_split(self.points, self.threads_count)
+
         counter = 0
         successful = False
 
+        start = datetime.now()
         while not successful:
-            _previous_centroids = deepcopy(self.centroids)
+            _previous_state = [i.copy_centroid_and_points() for i in self.centroids]
 
             for i in self.centroids:
                 i.points = []
@@ -115,13 +125,14 @@ class KMeans:
                 i.count_new_coordinates()
 
             successful = True
-            for i, j in zip(self.centroids, _previous_centroids):
+            for i, j in zip(self.centroids, _previous_state):
                 if i != j:
                     successful = False
                     counter += 1
                     break
-
-        print(f"KMeans ukoncene po {counter} iteraciach")
+        time = round((datetime.now()-start).total_seconds(), 3)
+        print(f"""KMeans ukoncene po {counter} iteraciach, trvalo to {time} sekund, pri {self.threads_count} threadoch \
+trvala jedna iteracia priemerne {round(time/counter, 3)} sekund.""")
 
     def plot(self):
         import matplotlib.pyplot as plt
@@ -134,6 +145,6 @@ class KMeans:
         plt.show()
 
 
-k_means = KMeans(data_filename="iris.csv", k=3, threads_count=20)
+k_means = KMeans(data_filename="diamonds_numeric.csv", k=3, threads_count=8)
 k_means.work()
 k_means.plot()
