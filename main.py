@@ -47,7 +47,7 @@ class Centroid:
         return copy
 
     def __eq__(self, other):
-        return self.centroid_coordinate == other.centroid_coordinate and set(self.points) == set(other.points)
+        return self.centroid_coordinate == other.centroid_coordinate
 
     def count_new_coordinates(self):
         if self.points:
@@ -104,7 +104,7 @@ class KMeans:
     def work(self):
         split_data_for_threads = array_split(self.points, self.threads_count)
 
-        counter = 0
+        counter = 1
         successful = False
 
         start = datetime.now()
@@ -112,7 +112,7 @@ class KMeans:
             _previous_state = [i.copy_centroid_and_points() for i in self.centroids]
 
             for i in self.centroids:
-                i.points = []
+                i.points.clear()
 
             threads = [Thread(target=self._thread_function(i)) for i in split_data_for_threads]
             for i in threads:
@@ -145,6 +145,6 @@ trvala jedna iteracia priemerne {round(time/counter, 3)} sekund.""")
         plt.show()
 
 
-k_means = KMeans(data_filename="diamonds_numeric.csv", k=3, threads_count=8)
+k_means = KMeans(data_filename="diamonds_numeric.csv", k=3, threads_count=4)
 k_means.work()
 k_means.plot()
