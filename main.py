@@ -91,9 +91,10 @@ class KMeans:
                 if current_distance < distance_to_new_centroid:
                     new_centroid = j
                     distance_to_new_centroid = current_distance
-            new_centroid.points.append(i)
+            new_centroid.points.append(i)  # list.append is thread safe operation
 
     def work(self):
+        split_data_for_threads = array_split(self.points, self.threads_count)
         counter = 0
         successful = False
 
@@ -103,7 +104,7 @@ class KMeans:
             for i in self.centroids:
                 i.points = []
 
-            threads = [Thread(target=self._thread_function(i)) for i in array_split(self.points, self.threads_count)]
+            threads = [Thread(target=self._thread_function(i)) for i in split_data_for_threads]
             for i in threads:
                 i.start()
 
@@ -133,6 +134,6 @@ class KMeans:
         plt.show()
 
 
-k_means = KMeans(data_filename="iris.csv", k=3, threads_count=150)
+k_means = KMeans(data_filename="iris.csv", k=3, threads_count=20)
 k_means.work()
 k_means.plot()
