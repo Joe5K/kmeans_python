@@ -15,7 +15,7 @@ class Point:
         return iter(self.coordinates)
 
     def __repr__(self):
-        return f"({', '.join([str(i) for i in self.coordinates])})"
+        return f"({', '.join([str(round(i, 4)) for i in self.coordinates])})"
 
     def __hash__(self):
         return hash(repr(self))
@@ -30,30 +30,33 @@ class Point:
         return True
 
     def distance(self, point):
-        return sqrt(sum([(i - j) ** 2 for i, j in zip(self.coordinates, point.coordinates)]))
+        return sqrt(self.distance_squared(point))
+
+    def distance_squared(self, point):
+        return sum([(i - j) ** 2 for i, j in zip(self.coordinates, point.coordinates)])
 
 
-class Centroid:
+class Cluster:
     def __init__(self, centroid_coordinate: Point):
-        self.centroid_coordinate = centroid_coordinate
+        self.centroid = centroid_coordinate
         self.points = []
 
     def __repr__(self):
-        return str(self.centroid_coordinate)
+        return str(self.centroid)
 
-    def count_new_coordinates(self):
+    def count_new_centroids(self):
         if self.points:
             sum_vector = [0 for _ in self.points[0]]
             for i in self.points:
                 for index, j in enumerate(i):
                     sum_vector[index] += j
-            self.centroid_coordinate = Point([i / len(self.points) for i in sum_vector])
+            self.centroid = Point([i / len(self.points) for i in sum_vector])
 
 
 class KMeans:
     def __init__(self, data_filename: str, k: int, threads_count: int):
         self._load_data(data_filename)
-        self._generate_initial_centroids(k)
+        self._generate_clusters_with_initial_centroids(k)
         self.threads_count = threads_count
 
     def _load_data(self, filename):
@@ -61,7 +64,7 @@ class KMeans:
         with open(filename) as file:
             dimension = None
             for line in file:
-                if filename == "iris.csv":
+                if "," in line and ";" in line:
                     data = line.replace(",", ".").replace("\n", "").split(";")
                 else:
                     data = line.replace("\n", "").split(",")
@@ -79,15 +82,15 @@ class KMeans:
                 if floats:
                     self.points.append(Point(floats))
 
-    def _generate_initial_centroids(self, k):
-        self.centroids = [Centroid(i) for i in choice(self.points, k, replace=False)]
+    def _generate_clusters_with_initial_centroids(self, k):
+        self.clusters = [Cluster(i) for i in choice(self.points, k, replace=False)]
 
     def _thread_function(self, points):
         for i in points:
             new_centroid = None
             distance_to_new_centroid = inf
-            for j in self.centroids:
-                current_distance = i.distance(j.centroid_coordinate)
+            for j in self.clusters:
+                current_distance = i.distance(j.centroid)
                 if current_distance < distance_to_new_centroid:
                     new_centroid = j
                     distance_to_new_centroid = current_distance
@@ -99,11 +102,14 @@ class KMeans:
         counter = 0
         successful = False
 
+        print(f"Pociatocny vyber centroidov: {', '.join([str(i.centroid) for i in self.clusters])}")
+
         start = datetime.now()
         while not successful:
-            _previous_centroids = [Centroid(i.centroid_coordinate) for i in self.centroids]
+            counter += 1
+            _previous_centroids = [i.centroid for i in self.clusters]
 
-            for i in self.centroids:
+            for i in self.clusters:
                 i.points.clear()
 
             threads = [Thread(target=self._thread_function(i)) for i in split_data_for_threads]
@@ -113,18 +119,32 @@ class KMeans:
             for i in threads:
                 i.join()
 
-            for i in self.centroids:
-                i.count_new_coordinates()
+            for i in self.clusters:
+                i.count_new_centroids()
+
+            sse = self.count_sse()
+
+            print(
+                f"""Ukoncena {counter}. iteracia, SSE = {sse}. \
+Pocty pointov pre jednotlive centroidy: {', '.join([str(len(i.points)) for i in self.clusters])}. \
+Suradnice centroidov: {', '.join([str(i.centroid) for i in self.clusters])}""")
 
             successful = True
-            for i, j in zip(self.centroids, _previous_centroids):
-                if i.centroid_coordinate != j.centroid_coordinate:
+            for i, j in zip(self.clusters, _previous_centroids):
+                if i.centroid != j:
                     successful = False
                     break
-            counter += 1
-        time = round((datetime.now()-start).total_seconds(), 3)
+
+        time = round((datetime.now() - start).total_seconds(), 3)
         print(f"""KMeans ukoncene po {counter} iteraciach, trvalo to {time} sekund, pri {self.threads_count} threadoch \
-trvala jedna iteracia priemerne {round(time/counter, 3)} sekund.""")
+trvala jedna iteracia priemerne {round(time / counter, 3)} sekund.""")
+
+    def count_sse(self):
+        sse = 0
+        for cluster in self.clusters:
+            for point in cluster.points:
+                sse += point.distance_squared(cluster.centroid)
+        return round(sse, 4)
 
     def plot(self):
         import matplotlib.pyplot as plt
@@ -132,11 +152,11 @@ trvala jedna iteracia priemerne {round(time/counter, 3)} sekund.""")
         fig = plt.figure(figsize=(12, 12))
         ax = fig.add_subplot(projection='3d')
 
-        for i in self.centroids:
+        for i in self.clusters:
             ax.scatter([j[0] for j in i.points], [j[1] for j in i.points], [j[2] for j in i.points])
         plt.show()
 
 
-k_means = KMeans(data_filename="diamonds_numeric.csv", k=3, threads_count=4)
+k_means = KMeans(data_filename="iris.csv", k=3, threads_count=4)
 k_means.work()
-k_means.plot()
+# k_means.plot()
