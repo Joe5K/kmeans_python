@@ -157,6 +157,6 @@ trvala jedna iteracia priemerne {round(time / counter, 3)} sekund.""")
         plt.show()
 
 
-k_means = KMeans(data_filename="iris.csv", k=3, threads_count=4)
+k_means = KMeans(data_filename="data/iris.csv", k=3, threads_count=4)
 k_means.work()
 # k_means.plot()
