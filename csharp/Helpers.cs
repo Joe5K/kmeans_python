@@ -5,9 +5,8 @@ using System.Text;
 
 namespace paralel_kmeans
 {
-    public static class Helpers
+    internal static class Helpers
     {
-
         internal static List<Point> CopyCentroids(List<Cluster> centroids)
         {
             List<Point> oldCentroids = new List<Point>();

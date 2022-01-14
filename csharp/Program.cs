@@ -11,18 +11,24 @@ namespace paralel_kmeans
 {
     class Point
     {
-        public double[] Coordinates;
-        public Point(double[] coordinates)
+        private double[] _Coordinates;
+        internal Point(double[] coordinates)
         {
-            this.Coordinates = coordinates;
-        }
-        public double this[int index]
-        {
-            get => this.Coordinates[index];
-            set => this.Coordinates[index] = value;
+            this._Coordinates = coordinates;
         }
 
-        public override bool Equals(object obj)
+        internal double[] Coordinates
+        {
+            get { return this._Coordinates; }
+        }
+
+        internal double this[int index]
+        {
+            get => this._Coordinates[index];
+            set => this._Coordinates[index] = value;
+        }
+
+        internal new bool Equals(object obj)
         {
             Point otherPoint = (Point)obj;
             for (int i = 0; i < this.Length; i++)
@@ -35,12 +41,7 @@ namespace paralel_kmeans
             return true;
         }
 
-        public int Length { get => this.Coordinates.Length; }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+        internal int Length { get => this._Coordinates.Length; }
 
         internal double Distance(Point vector)
         {
@@ -59,30 +60,41 @@ namespace paralel_kmeans
             return sum;
         }
 
-        public override string ToString()
+        internal new string ToString()
         {
-            return "(" + string.Join(", ", this.Coordinates.Select(x => Math.Round(x, 4))) + ")";
+            return "(" + string.Join(", ", this._Coordinates.Select(x => Math.Round(x, 4))) + ")";
         }
 
     }
 
-    class Cluster 
+    class Cluster
     {
-        public Point Centroid;
-        public List<Point> Points;
-        public Cluster(Point Centroid)
+        private Point _Centroid;
+        private List<Point> _Points;
+        internal Cluster(Point Centroid)
         {
-            this.Centroid = Centroid;
-            this.Points = new List<Point>();
+            this._Centroid = Centroid;
+            this._Points = new List<Point>();
         }
 
-        public void CountNewCentroids()
+        internal List<Point> Points
         {
-            if (this.Points.Count == 0)
+            get { return this._Points; }
+            set { this._Points = value; }
+        }
+
+        internal Point Centroid
+        {
+            get { return this._Centroid;  }
+        }
+
+        internal void CountNewCentroids()
+        {
+            if (this._Points.Count == 0)
                 return;
 
-            var sumVector = new decimal[this.Points[0].Length];
-            foreach (var point in this.Points)
+            var sumVector = new decimal[this._Points[0].Length];
+            foreach (var point in this._Points)
             {
                 for (int i = 0; i < point.Length; i++)
                 {
@@ -91,21 +103,21 @@ namespace paralel_kmeans
             }
             for (int i = 0; i < sumVector.Length; i++)
             {
-                this.Centroid[i] = (double)(sumVector[i] / this.Points.Count);
+                this._Centroid[i] = (double)(sumVector[i] / this._Points.Count);
             }
         }
 
-        public bool CentroidsEquals(Point otherCentroid)
+        internal bool CentroidsEquals(Point otherCentroid)
         {
-            return this.Centroid.Equals(otherCentroid);
+            return this._Centroid.Equals(otherCentroid);
         }
     }
 
     class KMeans
     {
-        List<Cluster> Clusters = new List<Cluster>();
-        List<Point> Points = new List<Point>();
-        int ThreadsCount;
+        private List<Cluster> Clusters = new List<Cluster>();
+        private List<Point> Points = new List<Point>();
+        private int ThreadsCount;
         public KMeans(string dataFilename, int k, int threadsCount)
         {
             this.LoadData(dataFilename);
@@ -149,7 +161,7 @@ namespace paralel_kmeans
                     {
                         this.Points.Add(new Point(loadedFloats.ToArray()));
                     }
-                    
+
                 }
             }
             return;
@@ -186,7 +198,7 @@ namespace paralel_kmeans
             var counter = 0;
             var successful = false;
 
-            Console.WriteLine($"Pociatocny vyber centroidov: {string.Join(", ", this.Clusters.Select((x) => x.Centroid))}");
+            Console.WriteLine($"Pociatocny vyber centroidov: {string.Join(", ", this.Clusters.Select((x) => x.Centroid.ToString()))}");
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -249,7 +261,7 @@ namespace paralel_kmeans
                         break;
                     }
                 }
-                
+
             }
 
             stopwatch.Stop();
