@@ -2,9 +2,7 @@ from contextlib import suppress
 from datetime import datetime
 from math import sqrt, inf
 from threading import Thread
-
-from numpy.random import choice
-from numpy import array_split
+from random import sample
 
 
 class Point:
@@ -83,7 +81,7 @@ class KMeans:
                     self.points.append(Point(floats))
 
     def _generate_clusters_with_initial_centroids(self, k):
-        self.clusters = [Cluster(i) for i in choice(self.points, k, replace=False)]
+        self.clusters = [Cluster(i) for i in sample(self.points, k)]
 
     def _thread_function(self, points):
         for i in points:
@@ -97,7 +95,7 @@ class KMeans:
             new_centroid.points.append(i)  # list.append is thread safe operation
 
     def work(self):
-        split_data_for_threads = array_split(self.points, self.threads_count)
+        split_data_for_threads = [self.points[i::self.threads_count] for i in range(self.threads_count)]
 
         counter = 0
         successful = False
@@ -157,6 +155,6 @@ trvala jedna iteracia priemerne {round(time / counter, 3)} sekund.""")
         plt.show()
 
 
-k_means = KMeans(data_filename="data/iris.csv", k=3, threads_count=4)
+k_means = KMeans(data_filename="../data/iris.csv", k=3, threads_count=4)
 k_means.work()
 # k_means.plot()
