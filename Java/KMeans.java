@@ -7,13 +7,13 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Random;
 
-public class KMeans
+class KMeans
 {
     private ArrayList<Cluster> clusters = new ArrayList<Cluster>();
     private ArrayList<Point> points = new ArrayList<Point>();
     private int threadsCount;
 
-    public KMeans(String dataFilename, int k, int threadsCount)
+    KMeans(String dataFilename, int k, int threadsCount)
     {
         this.loadData(dataFilename);
         this.generateInitialCentroids(k);
@@ -81,17 +81,17 @@ public class KMeans
 
     private final Object lock = new Object();
 
-    public void work() throws Exception {
-        var splitDataForThreads = new ArrayList[this.threadsCount];
+    void work() throws Exception {
+        ArrayList<ArrayList<Point>> splitDataForThreads = new ArrayList<>();
         for (int i = 0; i < this.threadsCount; i++)
         {
-            splitDataForThreads[i] = new ArrayList<Point>();
+            splitDataForThreads.add(new ArrayList<Point>());
         }
 
         for (int i = 0; i < this.points.size(); i++)
         {
             int threadId = i % this.threadsCount;
-            splitDataForThreads[threadId].add(this.points.get(i));
+            splitDataForThreads.get(threadId).add(this.points.get(i));
         }
 
         {
@@ -120,7 +120,7 @@ public class KMeans
             Thread[] threads = new Thread[this.threadsCount];
             for (int i = 0; i < this.threadsCount; i++)
             {
-                ArrayList<Point> data = splitDataForThreads[i];
+                ArrayList<Point> data = splitDataForThreads.get(i);
                 threads[i] = new Thread(() -> {
                     for (var point: data)
                     {
@@ -142,6 +142,7 @@ public class KMeans
                         }
                         synchronized (lock)
                         {
+                            assert newCluster != null;
                             newCluster.getPoints().add(point);
                         }
                     }

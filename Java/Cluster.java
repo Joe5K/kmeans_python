@@ -4,18 +4,18 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Cluster
+class Cluster
 {
     private Point centroid;
     private ArrayList<Point> points;
 
-    public Cluster(Point Centroid)
+    Cluster(Point Centroid)
     {
         this.centroid = Centroid;
         this.points = new ArrayList<Point>();
     }
 
-    public ArrayList<Point> getPoints(){
+    ArrayList<Point> getPoints(){
         return this.points;
     }
 
@@ -23,11 +23,11 @@ public class Cluster
         this.points = points;
     }
 
-    public Point getCentroid(){
+    Point getCentroid(){
         return this.centroid;
     }
 
-    public void countNewCoordinates()
+    void countNewCoordinates()
     {
         if (this.getPoints().size() == 0)
             return;
@@ -48,7 +48,7 @@ public class Cluster
         }
     }
 
-    public boolean centroidEquals(Point otherCentroid){
+    boolean centroidEquals(Point otherCentroid){
         return this.getCentroid().equals(otherCentroid);
     }
 }

@@ -2,15 +2,15 @@ package paralel_kmeans;
 
 import java.util.ArrayList;
 
-public class Point
+class Point
 {
     private double[] coordinates;
-    public Point(double[] coordinates)
+    Point(double[] coordinates)
     {
         this.coordinates = coordinates;
     }
 
-    public double[] getCoordinates(){
+    double[] getCoordinates(){
         return this.coordinates;
     }
 
@@ -18,24 +18,27 @@ public class Point
         this.coordinates = coordinates;
     }
 
-    public Point(ArrayList<Double> coordinates)
+    Point(ArrayList<Double> coordinates)
     {
         this.coordinates = new double[coordinates.size()];
         for (int i = 0; i < this.coordinates.length; i++){
             this.setOnIndex(i, coordinates.get(i));
         }
     }
-    public double getOnIndex(int index)
+    double getOnIndex(int index)
     {
         return this.coordinates[index];
     }
-    public void setOnIndex(int index, double data)
+    void setOnIndex(int index, double data)
     {
         this.coordinates[index] = data;
     }
 
     public boolean equals(Object obj)
     {
+        if (!(obj instanceof Point))
+            return false;
+
         Point other_point = (Point)obj;
         for (int i = 0; i < this.getLength(); i++)
         {
@@ -47,16 +50,16 @@ public class Point
         return true;
     }
 
-    public int getLength()
+    int getLength()
     {
-        return this.coordinates.length;
+        return this.getCoordinates().length;
     }
 
-    public double getDistance(Point vector) throws Exception {
+    double getDistance(Point vector) throws Exception {
         return Math.sqrt(this.getDistanceSquared(vector));
     }
 
-    public double getDistanceSquared(Point vector) throws Exception {
+    double getDistanceSquared(Point vector) throws Exception {
         if (this.getLength() != vector.getLength()){
             throw new Exception();
         }
