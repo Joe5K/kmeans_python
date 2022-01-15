@@ -1,7 +1,30 @@
 /Java/out/
-/Java/.idea/
+/Java/.idea/**/tasks.xml
+/Java/.idea/**/usage.statistics.xml
+/Java/.idea/**/dictionaries
+/Java/.idea/**/shelf
+
+# AWS User-specific
+/Java/.idea/**/aws.xml
+
+# Generated files
+/Java/.idea/**/contentModel.xml
+
+# Sensitive or high-churn files
+/Java/.idea/**/dataSources/
+/Java/.idea/**/dataSources.ids
+/Java/.idea/**/dataSources.local.xml
+/Java/.idea/**/sqlDataSources.xml
+/Java/.idea/**/dynamic.xml
+/Java/.idea/**/uiDesigner.xml
+/Java/.idea/**/dbnavigator.xml
+
+# Gradle
+/Java/.idea/**/gradle.xml
+/Java/.idea/**/libraries
+
 /C#/obj/
 /C#/bin/
 /C#/.vs/
-/.idea
+
 /Python/.idea
