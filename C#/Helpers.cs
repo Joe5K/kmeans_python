@@ -7,13 +7,13 @@ namespace paralel_kmeans
 {
     internal static class Helpers
     {
-        internal static List<Point> CopyCentroids(List<Cluster> centroids)
+        internal static List<Point> CopyCentroids(List<Cluster> clusters)
         {
             List<Point> oldCentroids = new List<Point>();
-            foreach (var centroid in centroids)
+            foreach (var cluster in clusters)
             {
-                double[] centroidCoordinates = new double[centroid.Centroid.Length];
-                Array.Copy(centroid.Centroid.Coordinates, centroidCoordinates, centroid.Centroid.Length);
+                double[] centroidCoordinates = new double[cluster.Centroid.Length];
+                Array.Copy(cluster.Centroid.Coordinates, centroidCoordinates, cluster.Centroid.Length);
                 oldCentroids.Add(new Point(centroidCoordinates));
             }
             return oldCentroids;

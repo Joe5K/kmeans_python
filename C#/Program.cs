@@ -134,9 +134,9 @@ namespace paralel_kmeans
                     string[] data;
                     string line = reader.ReadLine();
                     if (line.Contains(",") && line.Contains(";"))
-                        data = line.Replace(",", ".").Split(";");
+                        data = line.Replace(",", ".").Split(';');
                     else
-                        data = line.Split(",");
+                        data = line.Split(',');
 
                     var loadedFloats = new List<double>();
                     foreach (var i in data)
@@ -161,7 +161,6 @@ namespace paralel_kmeans
                     {
                         this.Points.Add(new Point(loadedFloats.ToArray()));
                     }
-
                 }
             }
             return;
@@ -261,7 +260,6 @@ namespace paralel_kmeans
                         break;
                     }
                 }
-
             }
 
             stopwatch.Stop();
@@ -287,7 +285,7 @@ namespace paralel_kmeans
     {
         static void Main(string[] args)
         {
-            var kmeans = new KMeans(@"data/iris.csv", 3, 4);
+            var kmeans = new KMeans(@"../../../data/iris.csv", 3, 4);
             kmeans.Work();
         }
     }
